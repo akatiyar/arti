@@ -24,19 +24,21 @@ public class ArtiApplication extends Application {
         Parse.enableLocalDatastore(this);
 
         // Add your initialization code here
-        Parse.initialize(this, "FQHluCbjFceB6JYBIdiusFV7hVEW10N0n1lvVbxe", "2yFSV9m86ffL2cmcRwgRQvY6sa7nGViWpTv8QfHK");
+        Parse.initialize(this, getString(R.string.parse_application_id),
+                getString(R.string.parse_client_key));
 
+        Parse.setLogLevel(Parse.LOG_LEVEL_DEBUG);
 
-        ParseUser.enableAutomaticUser();
+        // ParseUser.enableAutomaticUser();
 
-        ParseUser.getCurrentUser().saveInBackground();
+        // ParseUser.getCurrentUser().saveInBackground();
 
-        ParseACL defaultACL = new ParseACL();
+        // ParseACL defaultACL = new ParseACL();
         // Optionally enable public read access.
         // defaultACL.setPublicReadAccess(true);
-        ParseACL.setDefaultACL(defaultACL, true);
+        // ParseACL.setDefaultACL(defaultACL, true);
 
-        ParseInstallation.getCurrentInstallation().saveInBackground();
+        // ParseInstallation.getCurrentInstallation().saveInBackground();
     }
 }
 
