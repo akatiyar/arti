@@ -2,27 +2,31 @@ package akatiyar.arti;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.parse.FindCallback;
-import com.parse.GetDataCallback;
+import com.parse.Parse;
 import com.parse.ParseException;
-import com.parse.ParseFile;
-import com.parse.ParseImageView;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.ui.ParseLoginBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
 public class ArtiActivity extends Activity {
-
+    private static final String TAG = ArtiActivity.class.getName();
     private static final int LOGIN_REQUEST = 0;
 
+    private ListView deviceListView;
+    private ArrayAdapter<ParseObject> deviceAdapter;
 
     private TextView titleTextView;
     private TextView emailTextView;
@@ -31,8 +35,6 @@ public class ArtiActivity extends Activity {
 
     private ParseUser currentUser;
 
-    private TextView batteryText;
-    private ParseImageView fridgeImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,8 +48,9 @@ public class ArtiActivity extends Activity {
         titleTextView.setText(R.string.profile_title_logged_in);
 
         // ParseAnalytics.trackAppOpenedInBackground(getIntent());
-        batteryText = (TextView) findViewById(R.id.battery);
-        fridgeImage = (ParseImageView) findViewById(R.id.fridge);
+        deviceListView = (ListView) findViewById(R.id.device_list);
+        deviceAdapter = new DeviceAdapter(this, R.layout.device_state);
+        deviceListView.setAdapter(deviceAdapter);
 
         // Prompt for login/signup
         loginOrLogoutButton.setOnClickListener(new View.OnClickListener() {
@@ -82,34 +85,6 @@ public class ArtiActivity extends Activity {
         }
     }
 
-    private void showFridge() {
-        final String battery = getResources().getString(R.string.battery);
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("DeviceState")
-                .whereEqualTo("deviceId", "fd1234cam2")
-                .addDescendingOrder("updatedAt");
-        query.findInBackground(new FindCallback<ParseObject>() {
-            public void done(List<ParseObject> objects, ParseException e) {
-                if (e == null && !objects.isEmpty()) {
-                    ParseObject deviceState = objects.get(0);
-                    String batteryPercentage = String.valueOf(deviceState.get("battery"));
-                    batteryText.setText(battery + " " + batteryPercentage + "%");
-                    ParseFile photoFile = deviceState.getParseFile("photo");
-                    if (photoFile != null) {
-                        fridgeImage.setParseFile(photoFile);
-                        fridgeImage.loadInBackground(new GetDataCallback() {
-                            @Override
-                            public void done(byte[] data, ParseException e) {
-                                // nothing to do
-                            }
-                        });
-                    }
-                } else {
-                    batteryText.setText(battery + " NA");
-                }
-            }
-        });
-    }
-
     /**
      * Shows the profile of the given user.
      */
@@ -125,6 +100,49 @@ public class ArtiActivity extends Activity {
         showFridge();
     }
 
+
+    private void showFridge() {
+        // find devices for current user.
+        // Assuming currentUser is not null if we have reached here in the code.
+        ParseQuery<ParseObject> innerQuery = ParseQuery.getQuery("_User")
+                .whereEqualTo("username", currentUser.getUsername());
+        // TODO handle authorized users later
+        ParseQuery<ParseObject> devicesQuery = ParseQuery.getQuery("Device")
+                .whereMatchesQuery("owner", innerQuery);
+        // TODO Fix DeviceState table to keep a pointer to Device table for deviceId
+        // and query device states as below to read in one call.
+        //ParseQuery<ParseObject> deviceStateQuery = ParseQuery.getQuery("DeviceState")
+        //        .whereMatchesQuery("deviceId", devicesQuery);
+
+        devicesQuery.findInBackground(new FindCallback<ParseObject>() {
+            public void done(List<ParseObject> devices, ParseException e) {
+                if (e == null && !devices.isEmpty()) {
+                    for (ParseObject device : devices) {
+                        final String deviceId = String.valueOf(device.get("deviceId"));
+                        ParseQuery<ParseObject> query = ParseQuery.getQuery("DeviceState")
+                                .whereEqualTo("deviceId", deviceId)
+                                .addDescendingOrder("updatedAt");
+                        query.findInBackground(new FindCallback<ParseObject>() {
+                            public void done(List<ParseObject> objects, ParseException e) {
+                                if (e == null && !objects.isEmpty()) {
+                                    ParseObject deviceState = objects.get(0);
+                                    deviceAdapter.add(deviceState);
+                                } else {
+                                    Log.d(TAG, "Could not load device state for " + deviceId);
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    Log.d(TAG, "No devices found for " + currentUser.getUsername());
+                    // TODO Display a message on screen.
+                }
+            }
+        });
+
+
+    }
+
     /**
      * Show a message asking the user to log in, toggle login/logout button text.
      */
@@ -133,8 +151,6 @@ public class ArtiActivity extends Activity {
         emailTextView.setText("");
         nameTextView.setText("");
         loginOrLogoutButton.setText(R.string.profile_login_button_label);
-
-        batteryText.setText("");
-        fridgeImage.setParseFile(null);
+        deviceAdapter.clear();
     }
 }

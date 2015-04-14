@@ -3,10 +3,7 @@ package akatiyar.arti;
 import android.app.Application;
 
 import com.parse.Parse;
-import com.parse.ParseACL;
 import com.parse.ParseCrashReporting;
-import com.parse.ParseInstallation;
-import com.parse.ParseUser;
 
 /**
  * Created by abhinav on 4/5/15.
