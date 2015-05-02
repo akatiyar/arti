@@ -51,8 +51,10 @@ public class HomeFragment extends Fragment implements AbsListView.OnItemClickLis
      */
     private ListAdapter mAdapter;
 
-    public static HomeFragment newInstance() {
-        return new HomeFragment();
+    private static final HomeFragment homeFragment =  new HomeFragment();
+
+    public static synchronized HomeFragment newInstance() {
+        return homeFragment;
     }
 
     /**
@@ -64,6 +66,7 @@ public class HomeFragment extends Fragment implements AbsListView.OnItemClickLis
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "In Home Fragment Create");
         super.onCreate(savedInstanceState);
 
         mAdapter = new DeviceAdapter(getActivity(), R.layout.device_summary, ArtiContent.DEVICES);
@@ -72,11 +75,13 @@ public class HomeFragment extends Fragment implements AbsListView.OnItemClickLis
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "In Home Fragment Create View");
+
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+        mListView.setAdapter(mAdapter);
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
@@ -102,6 +107,9 @@ public class HomeFragment extends Fragment implements AbsListView.OnItemClickLis
         mListener = null;
     }
 
+    public void notifyDataSetChanged(){
+        ((ArrayAdapter<Device>)mAdapter).notifyDataSetChanged();
+    }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

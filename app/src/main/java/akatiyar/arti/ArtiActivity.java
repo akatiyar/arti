@@ -68,9 +68,9 @@ public class ArtiActivity extends AppCompatActivity
         if (currentUser == null) {
             // Prompt user to log in.
             promptForLogin();
+        } else {
+            showFridge();
         }
-
-        showFridge();
     }
 
     @Override
@@ -120,9 +120,7 @@ public class ArtiActivity extends AppCompatActivity
         ParseLoginBuilder loginBuilder = new ParseLoginBuilder(
                 ArtiActivity.this);
         startActivityForResult(loginBuilder.build(), LOGIN_REQUEST);
-
-        // Take user to home screen after login.
-        mNavigationDrawerFragment.selectItem(ArtiContent.HOME - 1);
+        showFridge();
     }
 
     private void showFridge() {
@@ -160,6 +158,7 @@ public class ArtiActivity extends AppCompatActivity
                                     ArtiContent.DEVICES.add(deviceState);
                                     Log.d(TAG, "Could not load device state for " + deviceId);
                                 }
+                            HomeFragment.newInstance().notifyDataSetChanged();
                             }
                         });
                     }
@@ -170,7 +169,8 @@ public class ArtiActivity extends AppCompatActivity
             }
         });
 
-
+        // Take user to home screen after login.
+        mNavigationDrawerFragment.selectItem(ArtiContent.HOME - 1);
     }
 
     public void restoreActionBar() {
