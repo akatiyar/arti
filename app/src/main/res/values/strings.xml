@@ -14,7 +14,11 @@
 
     <string name="about_text">Peek inside your fridge from anywhere!</string>
 
-    <string name="battery">Battery</string>
+    <string name="battery">B: </string>
+    <string name="temp">T: </string>
+    <string name="humidity">H: </string>
+
+    <string name="ok_button">X</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>

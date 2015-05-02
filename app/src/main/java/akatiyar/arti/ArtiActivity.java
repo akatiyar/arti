@@ -155,6 +155,9 @@ public class ArtiActivity extends AppCompatActivity
                                     ArtiContent.DEVICES.add(deviceState);
                                     Log.d(TAG, "Found " + deviceState + " for device id " + deviceId);
                                 } else {
+                                    Device deviceState = new Device();
+                                    deviceState.setName(deviceId);
+                                    ArtiContent.DEVICES.add(deviceState);
                                     Log.d(TAG, "Could not load device state for " + deviceId);
                                 }
                             }

@@ -1,5 +1,7 @@
 package akatiyar.arti.model;
 
+import android.graphics.Bitmap;
+
 import com.parse.ParseClassName;
 import com.parse.ParseFile;
 import com.parse.ParseObject;

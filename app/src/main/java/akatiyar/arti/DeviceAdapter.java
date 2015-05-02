@@ -8,11 +8,10 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import com.parse.GetDataCallback;
-import com.parse.ParseException;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.parse.ParseFile;
 import com.parse.ParseImageView;
-import com.parse.ParseObject;
 
 import java.util.List;
 
@@ -30,6 +29,7 @@ public class DeviceAdapter extends ArrayAdapter<Device> {
     public DeviceAdapter(Context context, int resource, List<Device> devices) {
         super(context, resource, devices);
         this.context = context;
+        ImageLoader.getInstance().init(ImageLoaderConfiguration.createDefault(context));
     }
 
     @Override
@@ -38,28 +38,28 @@ public class DeviceAdapter extends ArrayAdapter<Device> {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         View rowView = inflater.inflate(R.layout.device_summary, parent, false);
+
+        TextView nameText = (TextView) rowView.findViewById(R.id.d_name);
         TextView batteryText = (TextView) rowView.findViewById(R.id.d_battery);
-        ParseImageView fridgeImage = (ParseImageView) rowView.findViewById(R.id.d_image);
+        TextView tempText = (TextView) rowView.findViewById(R.id.d_temp);
+        TextView humidityText = (TextView) rowView.findViewById(R.id.d_humidity);
+        final ParseImageView fridgeImage = (ParseImageView) rowView.findViewById(R.id.d_image);
 
         final String battery = context.getResources().getString(R.string.battery);
+        final String temp = context.getResources().getString(R.string.temp);
+        final String humidity = context.getResources().getString(R.string.humidity);
 
         Device device = getItem(position);
-        String deviceId = device.getName();
-        String batteryPercentage = "Unknown";
-        batteryPercentage = String.valueOf(device.get("battery"));
 
+        nameText.setText(device.getName());
+        batteryText.setText(battery + device.getBattery() + "%");
+        tempText.setText(temp + device.getTemperature() + " C");
+        humidityText.setText(humidity + device.getHumidity() + "%");
 
-        batteryText.setText(deviceId + " " + battery + " " + batteryPercentage + "%");
-        ParseFile photoFile = device.getPhotoFile();
+        final ParseFile photoFile = device.getPhotoFile();
         if (photoFile != null) {
-            Log.d(TAG, "Loading photo file " + photoFile.getUrl());
-            fridgeImage.setParseFile(photoFile);
-            fridgeImage.loadInBackground(new GetDataCallback() {
-                @Override
-                public void done(byte[] data, ParseException e) {
-                    // nothing to do
-                }
-            });
+            Log.d(TAG, "Loading photo from " + photoFile.getUrl());
+            ImageLoader.getInstance().displayImage(photoFile.getUrl(), fridgeImage);
         }
 
         return rowView;

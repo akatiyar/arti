@@ -1,17 +1,26 @@
 package akatiyar.arti;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.TextView;
+
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.parse.ParseFile;
 
 import akatiyar.arti.model.ArtiContent;
 import akatiyar.arti.model.Device;
@@ -57,9 +66,6 @@ public class HomeFragment extends Fragment implements AbsListView.OnItemClickLis
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // TODO: Change Adapter to display your content
-//        mAdapter = new ArrayAdapter<Device>(getActivity(),
-//                android.R.layout.simple_list_item_1, android.R.id.text1, ArtiContent.DEVICES);
         mAdapter = new DeviceAdapter(getActivity(), R.layout.device_summary, ArtiContent.DEVICES);
     }
 
@@ -99,14 +105,33 @@ public class HomeFragment extends Fragment implements AbsListView.OnItemClickLis
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        // TODO Open photo in full screen.
-        Log.d(TAG, "Load image " + ArtiContent.DEVICES.get(position).getPhotoFile().getUrl());
 
-        // if (null != mListener) {
-            // Notify the active callbacks interface (the activity, if the
-            // fragment is attached to one) that an item has been selected.
-            // mListener.onFragmentInteraction(ArtiContent.DEVICES.get(position));
-        // }
+        ParseFile photoFile = ArtiContent.DEVICES.get(position).getPhotoFile();
+        if(photoFile!=null) {
+            Log.d(TAG, "Load image " + photoFile.getUrl());
+            // Open photo in full screen.
+            Activity activity = getActivity();
+            AlertDialog.Builder imageDialog = new AlertDialog.Builder(activity);
+
+            LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View layout = inflater.inflate(R.layout.device_full, null);
+            Rect displayRectangle = new Rect();
+            Window window = activity.getWindow();
+            window.getDecorView().getWindowVisibleDisplayFrame(displayRectangle);
+            layout.setMinimumWidth((int) (displayRectangle.width() * 0.9f));
+            layout.setMinimumHeight((int) (displayRectangle.height() * 0.9f));
+
+            ImageView imageView = (ImageView) layout.findViewById(R.id.fullimage);
+            imageDialog.setView(layout);
+            imageDialog.setPositiveButton(activity.getResources().getString(R.string.ok_button), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            AlertDialog alertDialog = imageDialog.create();
+            ImageLoader.getInstance().displayImage(photoFile.getUrl(), imageView);
+            alertDialog.show();
+        }
     }
 
     /**
