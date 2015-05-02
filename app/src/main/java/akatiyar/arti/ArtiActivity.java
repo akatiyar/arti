@@ -1,75 +1,62 @@
 package akatiyar.arti;
 
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import com.parse.FindCallback;
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.ui.ParseLoginBuilder;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import akatiyar.arti.model.ArtiContent;
+import akatiyar.arti.model.Device;
 
-public class ArtiActivity extends Activity {
+/**
+ * Created by abhinav on 4/29/15.
+ */
+public class ArtiActivity extends AppCompatActivity
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks,
+        OnFragmentInteractionListener {
+
     private static final String TAG = ArtiActivity.class.getName();
     private static final int LOGIN_REQUEST = 0;
 
-    private ListView deviceListView;
-    private ArrayAdapter<ParseObject> deviceAdapter;
+    /**
+     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
+     */
+    private NavigationDrawerFragment mNavigationDrawerFragment;
 
-    private TextView titleTextView;
-    private TextView emailTextView;
-    private TextView nameTextView;
-    private Button loginOrLogoutButton;
+    /**
+     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
+     */
+    private CharSequence mTitle;
 
     private ParseUser currentUser;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_arti);
 
-        titleTextView = (TextView) findViewById(R.id.profile_title);
-        emailTextView = (TextView) findViewById(R.id.profile_email);
-        nameTextView = (TextView) findViewById(R.id.profile_name);
-        loginOrLogoutButton = (Button) findViewById(R.id.login_or_logout_button);
-        titleTextView.setText(R.string.profile_title_logged_in);
+        mNavigationDrawerFragment = (NavigationDrawerFragment)
+                getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
+        mTitle = getTitle();
 
-        // ParseAnalytics.trackAppOpenedInBackground(getIntent());
-        deviceListView = (ListView) findViewById(R.id.device_list);
-        deviceAdapter = new DeviceAdapter(this, R.layout.device_state);
-        deviceListView.setAdapter(deviceAdapter);
-
-        // Prompt for login/signup
-        loginOrLogoutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (currentUser != null) {
-                    // User clicked to log out.
-                    ParseUser.logOut();
-                    currentUser = null;
-                    showProfileLoggedOut();
-                } else {
-                    // User clicked to log in.
-                    ParseLoginBuilder loginBuilder = new ParseLoginBuilder(
-                            ArtiActivity.this);
-                    startActivityForResult(loginBuilder.build(), LOGIN_REQUEST);
-                }
-            }
-        });
-
+        // Set up the drawer.
+        mNavigationDrawerFragment.setUp(
+                R.id.navigation_drawer,
+                (DrawerLayout) findViewById(R.id.drawer_layout));
     }
 
     @Override
@@ -78,30 +65,68 @@ public class ArtiActivity extends Activity {
 
         currentUser = ParseUser.getCurrentUser();
 
-        if (currentUser != null) {
-            showProfileLoggedIn();
-        } else {
-            showProfileLoggedOut();
+        if (currentUser == null) {
+            // Prompt user to log in.
+            promptForLogin();
         }
-    }
-
-    /**
-     * Shows the profile of the given user.
-     */
-    private void showProfileLoggedIn() {
-        titleTextView.setText(R.string.profile_title_logged_in);
-        emailTextView.setText(currentUser.getEmail());
-        String fullName = currentUser.getString("name");
-        if (fullName != null) {
-            nameTextView.setText(fullName);
-        }
-        loginOrLogoutButton.setText(R.string.profile_logout_button_label);
 
         showFridge();
     }
 
+    @Override
+    public void onNavigationDrawerItemSelected(int position) {
+        // update the main content by replacing fragments
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, createFragment(position + 1))
+                .commit();
+    }
+
+    private Fragment createFragment(int position) {
+        switch (position) {
+            case ArtiContent.HOME:
+                return HomeFragment.newInstance();
+            case ArtiContent.ACCOUNT:
+                return AccountFragment.newInstance();
+            case ArtiContent.ABOUT:
+                return AboutFragment.newInstance();
+        }
+        return null;//Should never happen
+    }
+
+    public void onFragmentAttached(int number) {
+        switch (number) {
+            case ArtiContent.HOME:
+                mTitle = getString(R.string.title_home);
+                break;
+            case ArtiContent.ACCOUNT:
+                mTitle = getString(R.string.title_account);
+                break;
+            case ArtiContent.ABOUT:
+                mTitle = getString(R.string.title_about);
+                break;
+        }
+    }
+
+    public void onLogout() {
+        // User clicked to log out.
+        ParseUser.logOut();
+        currentUser = null;
+
+        promptForLogin();
+    }
+
+    private void promptForLogin() {
+        ParseLoginBuilder loginBuilder = new ParseLoginBuilder(
+                ArtiActivity.this);
+        startActivityForResult(loginBuilder.build(), LOGIN_REQUEST);
+
+        // Take user to home screen after login.
+        mNavigationDrawerFragment.selectItem(ArtiContent.HOME - 1);
+    }
 
     private void showFridge() {
+        Log.d(TAG, "Listing devices for " + currentUser.getUsername());
         // find devices for current user.
         // Assuming currentUser is not null if we have reached here in the code.
         ParseQuery<ParseObject> innerQuery = ParseQuery.getQuery("_User")
@@ -119,14 +144,16 @@ public class ArtiActivity extends Activity {
                 if (e == null && !devices.isEmpty()) {
                     for (ParseObject device : devices) {
                         final String deviceId = String.valueOf(device.get("deviceId"));
-                        ParseQuery<ParseObject> query = ParseQuery.getQuery("DeviceState")
+
+                        ParseQuery<Device> query = ParseQuery.getQuery(Device.class)
                                 .whereEqualTo("deviceId", deviceId)
                                 .addDescendingOrder("updatedAt");
-                        query.findInBackground(new FindCallback<ParseObject>() {
-                            public void done(List<ParseObject> objects, ParseException e) {
+                        query.findInBackground(new FindCallback<Device>() {
+                            public void done(List<Device> objects, ParseException e) {
                                 if (e == null && !objects.isEmpty()) {
-                                    ParseObject deviceState = objects.get(0);
-                                    deviceAdapter.add(deviceState);
+                                    Device deviceState = objects.get(0);
+                                    ArtiContent.DEVICES.add(deviceState);
+                                    Log.d(TAG, "Found " + deviceState + " for device id " + deviceId);
                                 } else {
                                     Log.d(TAG, "Could not load device state for " + deviceId);
                                 }
@@ -143,14 +170,40 @@ public class ArtiActivity extends Activity {
 
     }
 
-    /**
-     * Show a message asking the user to log in, toggle login/logout button text.
-     */
-    private void showProfileLoggedOut() {
-        titleTextView.setText(R.string.profile_title_logged_out);
-        emailTextView.setText("");
-        nameTextView.setText("");
-        loginOrLogoutButton.setText(R.string.profile_login_button_label);
-        deviceAdapter.clear();
+    public void restoreActionBar() {
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+        actionBar.setDisplayShowTitleEnabled(true);
+        actionBar.setTitle(mTitle);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (!mNavigationDrawerFragment.isDrawerOpen()) {
+            // Only show items in the action bar relevant to this screen
+            // if the drawer is not showing. Otherwise, let the drawer
+            // decide what to show in the action bar.
+            getMenuInflater().inflate(R.menu.arti, menu);
+            restoreActionBar();
+            return true;
+        }
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
 }

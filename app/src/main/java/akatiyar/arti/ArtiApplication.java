@@ -4,6 +4,9 @@ import android.app.Application;
 
 import com.parse.Parse;
 import com.parse.ParseCrashReporting;
+import com.parse.ParseObject;
+
+import akatiyar.arti.model.Device;
 
 /**
  * Created by abhinav on 4/5/15.
@@ -13,6 +16,8 @@ public class ArtiApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        ParseObject.registerSubclass(Device.class);
 
         // Initialize Crash Reporting.
         ParseCrashReporting.enable(this);
