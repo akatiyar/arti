@@ -8,7 +8,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuItem;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -150,12 +149,13 @@ public class ArtiActivity extends AppCompatActivity
                             public void done(List<Device> objects, ParseException e) {
                                 if (e == null && !objects.isEmpty()) {
                                     Device deviceState = objects.get(0);
-                                    ArtiContent.DEVICES.add(deviceState);
+                                    ArtiContent.addDevice(deviceState);
+
                                     Log.d(TAG, "Found " + deviceState + " for device id " + deviceId);
                                 } else {
                                     Device deviceState = new Device();
                                     deviceState.setName(deviceId);
-                                    ArtiContent.DEVICES.add(deviceState);
+                                    ArtiContent.addDevice(deviceState);
                                     Log.d(TAG, "Could not load device state for " + deviceId);
                                 }
                             HomeFragment.newInstance().notifyDataSetChanged();
@@ -192,21 +192,5 @@ public class ArtiActivity extends AppCompatActivity
         }
         return super.onCreateOptionsMenu(menu);
     }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
 
 }

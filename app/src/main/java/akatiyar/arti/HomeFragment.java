@@ -17,7 +17,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
-import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.parse.ParseFile;
@@ -131,7 +130,7 @@ public class HomeFragment extends Fragment implements AbsListView.OnItemClickLis
 
             ImageView imageView = (ImageView) layout.findViewById(R.id.fullimage);
             imageDialog.setView(layout);
-            imageDialog.setPositiveButton(activity.getResources().getString(R.string.ok_button), new DialogInterface.OnClickListener() {
+            imageDialog.setNeutralButton(activity.getResources().getString(R.string.ok_button), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
                 }
@@ -139,19 +138,6 @@ public class HomeFragment extends Fragment implements AbsListView.OnItemClickLis
             AlertDialog alertDialog = imageDialog.create();
             ImageLoader.getInstance().displayImage(photoFile.getUrl(), imageView);
             alertDialog.show();
-        }
-    }
-
-    /**
-     * The default content for this Fragment has a TextView that is shown when
-     * the list is empty. If you would like to change the text, call this method
-     * to supply the text it should use.
-     */
-    public void setEmptyText(CharSequence emptyText) {
-        View emptyView = mListView.getEmptyView();
-
-        if (emptyView instanceof TextView) {
-            ((TextView) emptyView).setText(emptyText);
         }
     }
 

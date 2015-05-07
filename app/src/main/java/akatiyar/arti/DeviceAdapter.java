@@ -8,11 +8,15 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import com.nostra13.universalimageloader.cache.disc.impl.ext.LruDiscCache;
+import com.nostra13.universalimageloader.cache.disc.naming.HashCodeFileNameGenerator;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.utils.StorageUtils;
 import com.parse.ParseFile;
 import com.parse.ParseImageView;
 
+import java.io.File;
 import java.util.List;
 
 import akatiyar.arti.model.Device;
@@ -29,6 +33,7 @@ public class DeviceAdapter extends ArrayAdapter<Device> {
     public DeviceAdapter(Context context, int resource, List<Device> devices) {
         super(context, resource, devices);
         this.context = context;
+
         ImageLoader.getInstance().init(ImageLoaderConfiguration.createDefault(context));
     }
 

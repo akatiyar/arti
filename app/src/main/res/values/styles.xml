@@ -1,11 +1,15 @@
 <resources>
 
+    <color name="app_background">#FFF8F8F8</color>
+
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat">
+    <style name="AppTheme" parent="Theme.AppCompat.Light">
         <!-- customize the color palette -->
-        <!--<item name="colorPrimary">@color/material_blue_500</item>-->
-        <!--<item name="colorPrimaryDark">@color/material_blue_700</item>-->
-        <!--<item name="colorAccent">@color/material_green_A200</item>-->
+        <item name="colorPrimary">#aa0008</item>
+        <item name="android:textColorPrimary">#fff</item>
+        <item name="colorPrimaryDark">#aa0008</item>
+        <item name="colorAccent">#aa0008</item>
+        <item name="android:windowBackground">@color/app_background</item>
     </style>
 
 </resources>
