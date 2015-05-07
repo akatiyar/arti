@@ -1,5 +1,6 @@
 package akatiyar.arti;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -29,7 +30,7 @@ public class ArtiActivity extends AppCompatActivity
         OnFragmentInteractionListener {
 
     private static final String TAG = ArtiActivity.class.getName();
-    private static final int LOGIN_REQUEST = 0;
+    private static final int LOGIN_REQUEST = 1754;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -40,8 +41,6 @@ public class ArtiActivity extends AppCompatActivity
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
     private CharSequence mTitle;
-
-    private ParseUser currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,9 +61,7 @@ public class ArtiActivity extends AppCompatActivity
     protected void onStart() {
         super.onStart();
 
-        currentUser = ParseUser.getCurrentUser();
-
-        if (currentUser == null) {
+        if (ParseUser.getCurrentUser() == null) {
             // Prompt user to log in.
             promptForLogin();
         } else {
@@ -110,7 +107,6 @@ public class ArtiActivity extends AppCompatActivity
     public void onLogout() {
         // User clicked to log out.
         ParseUser.logOut();
-        currentUser = null;
 
         promptForLogin();
     }
@@ -119,10 +115,31 @@ public class ArtiActivity extends AppCompatActivity
         ParseLoginBuilder loginBuilder = new ParseLoginBuilder(
                 ArtiActivity.this);
         startActivityForResult(loginBuilder.build(), LOGIN_REQUEST);
-        showFridge();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == LOGIN_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                showFridge();
+            }
+        }
+    }
+
+//    @Override
+//    protected void onPostResume() {
+//        super.onPostResume();
+//        if (mReturningWithResult) {
+//            // Commit your transactions here.
+//        }
+//        // Reset the boolean flag back to false for next time.
+//        mReturningWithResult = false;
+//    }
+
     private void showFridge() {
+        final ParseUser currentUser = ParseUser.getCurrentUser();
         Log.d(TAG, "Listing devices for " + currentUser.getUsername());
         // find devices for current user.
         // Assuming currentUser is not null if we have reached here in the code.
@@ -158,7 +175,7 @@ public class ArtiActivity extends AppCompatActivity
                                     ArtiContent.addDevice(deviceState);
                                     Log.d(TAG, "Could not load device state for " + deviceId);
                                 }
-                            HomeFragment.newInstance().notifyDataSetChanged();
+                                HomeFragment.newInstance().notifyDataSetChanged();
                             }
                         });
                     }

@@ -27,7 +27,7 @@
             android:id="@+id/logout_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/Base.TextAppearance.AppCompat.Medium"
+            style="@style/ParseLoginUI.Button"
             android:layout_marginTop="@dimen/com_parse_ui_large_vertical_spacing"
             android:text="@string/account_logout_button_label"/>
 

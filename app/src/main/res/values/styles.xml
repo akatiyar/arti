@@ -7,9 +7,10 @@
         <!-- customize the color palette -->
         <item name="colorPrimary">#aa0008</item>
         <item name="android:textColorPrimary">#fff</item>
-        <item name="colorPrimaryDark">#aa0008</item>
+        <!--<item name="colorPrimaryDark">#aa0008</item>-->
         <item name="colorAccent">#aa0008</item>
         <item name="android:windowBackground">@color/app_background</item>
+        <item name="colorControlNormal">#333</item>
     </style>
 
 </resources>

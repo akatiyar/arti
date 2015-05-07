@@ -8,7 +8,7 @@
         <item name="android:background">
             @drawable/com_parse_ui_parse_login_button_background_selector
         </item>
-        <item name="android:textColor">@color/com_parse_ui_parse_login_display_text</item>
+        <item name="android:textColor">@color/com_parse_ui_parse_button_display_text</item>
         <item name="android:textSize">18sp</item>
     </style>
 
@@ -33,6 +33,7 @@
     </style>
 
     <style name="ParseLoginUI.EditText" parent="@android:style/Widget.EditText">
+        <item name="android:textColor">@color/com_parse_ui_parse_login_display_text</item>
         <item name="android:singleLine">true</item>
     </style>
 </resources>
